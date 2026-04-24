@@ -1,0 +1,32 @@
+services:
+  - type: web_service
+    name: om-satarkar-commerce-backend
+    env: node
+    branch: main
+    root: server
+    buildCommand: npm install
+    startCommand: npm run start
+    plan: starter
+    envVars:
+      - key: MONGODB_URI
+        value: ""
+      - key: ADMIN_EMAIL
+        value: "om"
+      - key: ADMIN_PASSWORD
+        value: "password@123"
+      - key: JWT_SECRET
+        value: "replace-with-a-secure-key"
+      - key: FRONTEND_URL
+        value: "https://om-satarkar-commerce-frontend.onrender.com"
+
+  - type: static_site
+    name: om-satarkar-commerce-frontend
+    env: static
+    branch: main
+    root: .
+    buildCommand: npm install && npm run build
+    publishPath: dist
+    plan: starter
+    envVars:
+      - key: VITE_API_URL
+        value: "https://e-commerce-buoa.onrender.com"
