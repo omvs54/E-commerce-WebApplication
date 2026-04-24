@@ -15,9 +15,9 @@ services:
       - key: ADMIN_PASSWORD
         value: "password@123"
       - key: JWT_SECRET
-        value: "replace-with-a-secure-key"
+        value: ""
       - key: FRONTEND_URL
-        value: "https://om-satarkar-commerce-frontend.onrender.com"
+        value: "https://e-commerce-webapplication-1.onrender.com"
 
   - type: static_site
     name: om-satarkar-commerce-frontend
@@ -29,4 +29,4 @@ services:
     plan: starter
     envVars:
       - key: VITE_API_URL
-        value: "https://e-commerce-buoa.onrender.com"
+        value: "https://e-commerce-webapplication-1.onrender.com"
