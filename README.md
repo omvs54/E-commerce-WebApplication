@@ -48,8 +48,8 @@ This is the best free hosting stack for a MERN app. Vercel hosts the React front
    - `FRONTEND_URL` = your Vercel frontend URL (set this after Step 2)
    - `ADMIN_NAME` = Om Satarkar
    - `ADMIN_LOGIN` = om
-   - `ADMIN_EMAIL` = admin@omsatarkar.store
-   - `ADMIN_PASSWORD` = your chosen admin password
+   - `ADMIN_EMAIL` = om@gmail.com
+   - `ADMIN_PASSWORD` = password@123
 5. Railway will give you a public URL like `https://your-project.up.railway.app`.
 
 #### 2. Frontend on Vercel
