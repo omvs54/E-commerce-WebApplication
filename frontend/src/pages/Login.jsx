@@ -1,48 +1,6 @@
-import { useEffect, useState } from 'react';
-
-const API_BASE_URL =
-  (typeof window !== 'undefined' && window.location.hostname === 'localhost' && window.location.port === '5174'
-    ? 'http://localhost:4000'
-    : '') || import.meta.env.VITE_API_URL || '';
-
-function buildUrl(path) {
-  return `${API_BASE_URL}${path}`;
-}
-
-async function requestJson(path, options = {}) {
-  const response = await fetch(buildUrl(path), {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(data?.message || data?.error || 'Something went wrong. Please try again.');
-  }
-
-  return data;
-}
-
-function normalizeAuthResponse(data, fallbackRole) {
-  const payload = data?.user || data?.data?.user || data?.data || data || {};
-  const role = payload.role === 'admin' || data?.role === 'admin' || fallbackRole === 'admin' ? 'admin' : 'user';
-  const token = data?.token || data?.accessToken || payload.token || data?.data?.token || '';
-
-  return {
-    token,
-    role,
-    user: {
-      userId: payload.userId || payload.id || payload._id || '',
-      name: payload.name || '',
-      email: payload.email || '',
-      role,
-    },
-  };
-}
+import { useState } from 'react';
+import { apiRequest } from '../lib/api';
+import { normalizeStoredAuth } from '../lib/session';
 
 function FormAlert({ type, message }) {
   if (!message) {
@@ -52,7 +10,7 @@ function FormAlert({ type, message }) {
   return <div className={`auth-alert auth-alert--${type}`}>{message}</div>;
 }
 
-function Login({ onAuthSuccess = () => {} }) {
+export default function Login({ onAuthSuccess = () => {} }) {
   const [role, setRole] = useState('user');
   const [mode, setMode] = useState('login');
   const [loading, setLoading] = useState(false);
@@ -67,27 +25,32 @@ function Login({ onAuthSuccess = () => {} }) {
     password: '',
   });
 
-  useEffect(() => {
-    setNotice({ type: '', message: '' });
-    if (role === 'admin' && mode !== 'login') {
-      setMode('login');
-    }
-  }, [mode, role]);
-
   const updateLoginValue = (field) => (event) => {
-    const value = event.target.value;
     setLoginValues((current) => ({
       ...current,
-      [field]: value,
+      [field]: event.target.value,
     }));
   };
 
   const updateRegisterValue = (field) => (event) => {
-    const value = event.target.value;
     setRegisterValues((current) => ({
       ...current,
-      [field]: value,
+      [field]: event.target.value,
     }));
+  };
+
+  const activateRole = (nextRole) => {
+    setRole(nextRole);
+    setNotice({ type: '', message: '' });
+
+    if (nextRole === 'admin') {
+      setMode('login');
+    }
+  };
+
+  const activateMode = (nextMode) => {
+    setMode(nextMode);
+    setNotice({ type: '', message: '' });
   };
 
   const handleLoginSubmit = async (event) => {
@@ -99,7 +62,7 @@ function Login({ onAuthSuccess = () => {} }) {
     if (!identifier || !password) {
       setNotice({
         type: 'error',
-        message: 'Please enter your email or username and password.',
+        message: 'Please enter your account email or username and password.',
       });
       return;
     }
@@ -108,27 +71,28 @@ function Login({ onAuthSuccess = () => {} }) {
     setNotice({ type: '', message: '' });
 
     try {
-      const data = await requestJson('/api/auth/login', {
+      const data = await apiRequest('/api/auth/login', {
         method: 'POST',
-        body: JSON.stringify({
+        body: {
           role,
-          email: identifier,
           identifier,
+          email: identifier,
           username: identifier,
           password,
-        }),
+        },
       });
 
-      const auth = normalizeAuthResponse(data, role);
+      const auth = normalizeStoredAuth(data, role);
+
       if (!auth.token) {
-        throw new Error('Login succeeded, but no token was returned by the server.');
+        throw new Error('Login succeeded, but the server did not return a token.');
       }
 
       onAuthSuccess(auth);
     } catch (error) {
       setNotice({
         type: 'error',
-        message: error.message || 'Unable to log in right now.',
+        message: error.message || 'Unable to sign in right now.',
       });
     } finally {
       setLoading(false);
@@ -145,7 +109,7 @@ function Login({ onAuthSuccess = () => {} }) {
     if (!name || !email || !password) {
       setNotice({
         type: 'error',
-        message: 'Please provide your name, email, and password to create an account.',
+        message: 'Please provide your name, email, and password.',
       });
       return;
     }
@@ -154,44 +118,26 @@ function Login({ onAuthSuccess = () => {} }) {
     setNotice({ type: '', message: '' });
 
     try {
-      const data = await requestJson('/api/auth/register', {
+      const data = await apiRequest('/api/auth/register', {
         method: 'POST',
-        body: JSON.stringify({
+        body: {
           name,
           email,
           password,
-          role: 'user',
-        }),
+        },
       });
 
-      const auth = normalizeAuthResponse(data, 'user');
+      const auth = normalizeStoredAuth(data, 'user');
 
-      if (auth.token) {
-        onAuthSuccess(auth);
-        return;
+      if (!auth.token) {
+        throw new Error('Account created, but automatic sign-in did not complete.');
       }
 
-      const loginData = await requestJson('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({
-          role: 'user',
-          email,
-          identifier: email,
-          username: email,
-          password,
-        }),
-      });
-
-      const loginAuth = normalizeAuthResponse(loginData, 'user');
-      if (!loginAuth.token) {
-        throw new Error('Account created, but automatic sign-in failed.');
-      }
-
-      onAuthSuccess(loginAuth);
+      onAuthSuccess(auth);
     } catch (error) {
       setNotice({
         type: 'error',
-        message: error.message || 'Unable to register right now.',
+        message: error.message || 'Unable to create your account right now.',
       });
     } finally {
       setLoading(false);
@@ -202,20 +148,27 @@ function Login({ onAuthSuccess = () => {} }) {
     <main className="auth-page">
       <section className="auth-card">
         <div className="auth-card__aside">
-          <p className="auth-card__eyebrow">Jyesta storefront</p>
-          <h1 className="auth-card__title">Sign in to continue shopping or manage the catalog.</h1>
-          <p className="auth-card__subtitle">
-            One account screen for both customers and admins, with secure login, new user signup, and persistent sessions.
-          </p>
+          <div>
+            <p className="auth-card__eyebrow">Om Satarkar Store</p>
+            <h1 className="auth-card__title">A simple ecommerce website with real login, cart, and admin control.</h1>
+            <p className="auth-card__subtitle">
+              Customers can sign up and shop. Admins can manage the catalog and track orders. The app is structured to
+              split cleanly into separate frontend and backend repos for Render deployment.
+            </p>
+          </div>
 
           <div className="auth-card__notes">
             <div className="auth-note">
-              <span className="auth-note__label">Admin access</span>
-              <strong className="auth-note__value">om / password#123</strong>
+              <span className="auth-note__label">Customer flow</span>
+              <strong className="auth-note__value">Sign up, browse products, add to cart, and place orders.</strong>
             </div>
             <div className="auth-note">
-              <span className="auth-note__label">User accounts</span>
-              <strong className="auth-note__value">Register with name, email, and password</strong>
+              <span className="auth-note__label">Admin flow</span>
+              <strong className="auth-note__value">Log in with the seeded admin account from backend environment variables.</strong>
+            </div>
+            <div className="auth-note">
+              <span className="auth-note__label">Deployment</span>
+              <strong className="auth-note__value">Frontend static site + backend API, ready for separate Render services.</strong>
             </div>
           </div>
         </div>
@@ -224,17 +177,17 @@ function Login({ onAuthSuccess = () => {} }) {
           <div className="auth-tabs" role="tablist" aria-label="Select account type">
             <button
               type="button"
-              className={`auth-tab ${role === 'admin' ? 'auth-tab--active' : ''}`}
-              onClick={() => setRole('admin')}
+              className={`auth-tab ${role === 'user' ? 'auth-tab--active' : ''}`}
+              onClick={() => activateRole('user')}
             >
-              Admin Login
+              Customer
             </button>
             <button
               type="button"
-              className={`auth-tab ${role === 'user' ? 'auth-tab--active' : ''}`}
-              onClick={() => setRole('user')}
+              className={`auth-tab ${role === 'admin' ? 'auth-tab--active' : ''}`}
+              onClick={() => activateRole('admin')}
             >
-              User Login
+              Admin
             </button>
           </div>
 
@@ -243,21 +196,21 @@ function Login({ onAuthSuccess = () => {} }) {
               <button
                 type="button"
                 className={`auth-toggle__button ${mode === 'login' ? 'auth-toggle__button--active' : ''}`}
-                onClick={() => setMode('login')}
+                onClick={() => activateMode('login')}
               >
-                Log in
+                Login
               </button>
               <button
                 type="button"
                 className={`auth-toggle__button ${mode === 'register' ? 'auth-toggle__button--active' : ''}`}
-                onClick={() => setMode('register')}
+                onClick={() => activateMode('register')}
               >
-                Sign up
+                Register
               </button>
             </div>
           ) : (
             <div className="auth-credential">
-              Use the admin credentials <strong>om</strong> and <strong>password#123</strong>.
+              Use the admin username or email and password that you configure in the backend environment variables.
             </div>
           )}
 
@@ -267,14 +220,14 @@ function Login({ onAuthSuccess = () => {} }) {
             <form className="auth-form" onSubmit={handleLoginSubmit}>
               <div className="auth-form__group">
                 <label className="auth-form__label" htmlFor="identifier">
-                  {role === 'admin' ? 'Admin username or email' : 'Email address'}
+                  {role === 'admin' ? 'Admin email or username' : 'Email address'}
                 </label>
                 <input
                   id="identifier"
                   className="auth-form__input"
                   type="text"
                   autoComplete="username"
-                  placeholder={role === 'admin' ? 'om' : 'you@example.com'}
+                  placeholder={role === 'admin' ? 'admin or admin@example.com' : 'you@example.com'}
                   value={loginValues.identifier}
                   onChange={updateLoginValue('identifier')}
                 />
@@ -296,21 +249,21 @@ function Login({ onAuthSuccess = () => {} }) {
               </div>
 
               <button className="button button--primary button--full" type="submit" disabled={loading}>
-                {loading ? 'Signing in...' : role === 'admin' ? 'Admin login' : 'Log in'}
+                {loading ? 'Signing in...' : role === 'admin' ? 'Admin login' : 'Login'}
               </button>
             </form>
           ) : (
             <form className="auth-form" onSubmit={handleRegisterSubmit}>
               <div className="auth-form__group">
                 <label className="auth-form__label" htmlFor="name">
-                  Name
+                  Full name
                 </label>
                 <input
                   id="name"
                   className="auth-form__input"
                   type="text"
                   autoComplete="name"
-                  placeholder="Your full name"
+                  placeholder="Om Satarkar"
                   value={registerValues.name}
                   onChange={updateRegisterValue('name')}
                 />
@@ -340,7 +293,7 @@ function Login({ onAuthSuccess = () => {} }) {
                   className="auth-form__input"
                   type="password"
                   autoComplete="new-password"
-                  placeholder="Create a secure password"
+                  placeholder="At least 6 characters"
                   value={registerValues.password}
                   onChange={updateRegisterValue('password')}
                 />
@@ -356,5 +309,3 @@ function Login({ onAuthSuccess = () => {} }) {
     </main>
   );
 }
-
-export default Login;

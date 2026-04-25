@@ -1,0 +1,9 @@
+services:
+  - type: static_site
+    name: om-satarkar-store-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    publishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://your-backend-service.onrender.com

@@ -1,18 +1,7 @@
 services:
-  - type: static_site
-    name: om-satarkar-store-frontend
-    env: static
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    publishPath: dist
-    envVars:
-      - key: VITE_API_URL
-        value: https://om-satarkar-store-backend.onrender.com
-
   - type: web
     name: om-satarkar-store-backend
     env: node
-    rootDir: backend
     buildCommand: npm install
     startCommand: npm start
     envVars:
@@ -21,7 +10,7 @@ services:
       - key: JWT_SECRET
         value: replace-with-a-long-secret
       - key: FRONTEND_URL
-        value: https://om-satarkar-store-frontend.onrender.com
+        value: https://your-frontend-service.onrender.com
       - key: ADMIN_NAME
         value: Om Satarkar
       - key: ADMIN_LOGIN
