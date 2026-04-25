@@ -6,4 +6,4 @@ services:
     publishPath: dist
     envVars:
       - key: VITE_API_URL
-        value: https://your-backend-service.onrender.com
+        value: https://e-commerce-webapplication-1.onrender.com

@@ -6,11 +6,11 @@ services:
     startCommand: npm start
     envVars:
       - key: MONGODB_URI
-        value: mongodb://127.0.0.1:27017/om_satarkar_store
+        sync: false
       - key: JWT_SECRET
-        value: replace-with-a-long-secret
+        sync: false
       - key: FRONTEND_URL
-        value: https://your-frontend-service.onrender.com
+        value: https://e-commerce-webapplication-zoyj.onrender.com
       - key: ADMIN_NAME
         value: Om Satarkar
       - key: ADMIN_LOGIN
@@ -18,4 +18,4 @@ services:
       - key: ADMIN_EMAIL
         value: admin@omsatarkar.store
       - key: ADMIN_PASSWORD
-        value: ChangeMe123!
+        sync: false
