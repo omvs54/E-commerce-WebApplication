@@ -4,7 +4,7 @@ import Product from './models/Product.js';
 
 dotenv.config();
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/om_satarkar_store';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://omvs54_db_user:9850780278omss@omvs54.dx8zzba.mongodb.net/om_satarkar_store?retryWrites=true&w=majority&appName=omvs54';
 
 const products = [
   {
