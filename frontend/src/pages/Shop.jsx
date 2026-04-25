@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { apiRequest } from '../lib/api';
 import { clearStoredCart, loadStoredCart, persistStoredCart } from '../lib/session';
 
@@ -9,18 +8,8 @@ const INR_FORMATTER = new Intl.NumberFormat('en-IN', {
   maximumFractionDigits: 0,
 });
 
-const DATE_FORMATTER = new Intl.DateTimeFormat('en-IN', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-});
-
 function formatCurrency(value) {
   return INR_FORMATTER.format(Number(value) || 0);
-}
-
-function formatDate(value) {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? 'Recently' : DATE_FORMATTER.format(date);
 }
 
 function toNumber(value) {
@@ -40,15 +29,7 @@ function normalizeProduct(product) {
   };
 }
 
-function normalizeOrder(order) {
-  return {
-    id: order?._id || order?.id || '',
-    status: order?.status || 'placed',
-    total: toNumber(order?.total),
-    createdAt: order?.createdAt || new Date().toISOString(),
-    items: Array.isArray(order?.items) ? order.items : [],
-  };
-}
+
 
 function Notice({ type, message }) {
   if (!message) {
@@ -58,25 +39,20 @@ function Notice({ type, message }) {
   return <div className={`status-message status-message--${type}`}>{message}</div>;
 }
 
-export default function Shop({ auth = null, onLogout = () => {} }) {
-  const isGuest = !auth?.token;
-  const userId = auth?.user?.userId || 'guest';
+export default function Shop() {
+  const userId = 'guest';
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [productsError, setProductsError] = useState('');
   const [cart, setCart] = useState(() => loadStoredCart(userId));
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutNotice, setCheckoutNotice] = useState({ type: '', message: '' });
-  const [orders, setOrders] = useState([]);
-  const [ordersLoading, setOrdersLoading] = useState(true);
-  const [ordersError, setOrdersError] = useState('');
+  const totalItems = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
+  const cartTotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
 
   useEffect(() => {
     persistStoredCart(userId, cart);
   }, [cart, userId]);
-
-  const totalItems = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
-  const cartTotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
 
   useEffect(() => {
     let cancelled = false;
@@ -110,49 +86,6 @@ export default function Shop({ auth = null, onLogout = () => {} }) {
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadOrders = async () => {
-      if (!auth?.token) {
-        setOrders([]);
-        setOrdersLoading(false);
-        setOrdersError('');
-        return;
-      }
-
-      setOrdersLoading(true);
-      setOrdersError('');
-
-      try {
-        const data = await apiRequest('/api/orders/me', {
-          token: auth.token,
-        });
-
-        const rawOrders = Array.isArray(data) ? data : data?.orders || [];
-
-        if (!cancelled) {
-          setOrders(rawOrders.map(normalizeOrder));
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setOrders([]);
-          setOrdersError(error.message || 'Unable to load your orders.');
-        }
-      } finally {
-        if (!cancelled) {
-          setOrdersLoading(false);
-        }
-      }
-    };
-
-    void loadOrders();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [auth?.token]);
 
   const addToCart = (product) => {
     setCheckoutNotice({ type: '', message: '' });
@@ -214,21 +147,12 @@ export default function Shop({ auth = null, onLogout = () => {} }) {
       return;
     }
 
-    if (isGuest) {
-      setCheckoutNotice({
-        type: 'info',
-        message: 'Please log in to complete your checkout.',
-      });
-      return;
-    }
-
     setCheckoutLoading(true);
     setCheckoutNotice({ type: '', message: '' });
 
     try {
       const data = await apiRequest('/api/orders/checkout', {
         method: 'POST',
-        token: auth.token,
         body: {
           items: cart.map((item) => ({
             productId: item.id,
@@ -246,12 +170,6 @@ export default function Shop({ auth = null, onLogout = () => {} }) {
         type: 'success',
         message: data?.message || 'Order placed successfully.',
       });
-
-      const nextOrders = await apiRequest('/api/orders/me', {
-        token: auth.token,
-      });
-
-      setOrders((Array.isArray(nextOrders) ? nextOrders : nextOrders?.orders || []).map(normalizeOrder));
     } catch (error) {
       setCheckoutNotice({
         type: 'error',
@@ -267,44 +185,19 @@ export default function Shop({ auth = null, onLogout = () => {} }) {
       <div className="app-shell__container">
         <header className="app-bar">
           <div className="app-bar__brand">
-            <Link to="/shop" className="app-bar__title">
-              Om Satarkar Store
-            </Link>
+            <span className="app-bar__title">Om Satarkar Store</span>
             <p className="app-bar__subtitle">
-              Welcome {isGuest ? 'guest' : auth?.user?.name || 'back'}. Browse products, manage your cart, and review your latest orders.
+              Browse products, manage your cart, and checkout instantly — no login required.
             </p>
-          </div>
-
-          <div className="app-bar__actions">
-            {auth?.role === 'admin' ? (
-              <Link to="/admin" className="button button--secondary">
-                Admin dashboard
-              </Link>
-            ) : null}
-            {isGuest ? (
-              <Link to="/login" className="button button--primary">
-                Login
-              </Link>
-            ) : (
-              <>
-                <div className="app-chip">
-                  <span>{auth?.user?.email || 'Signed in'}</span>
-                </div>
-                <button type="button" className="button button--ghost" onClick={onLogout}>
-                  Logout
-                </button>
-              </>
-            )}
           </div>
         </header>
 
         <section className="store-hero">
           <div className="store-hero__copy">
             <p className="store-hero__eyebrow">React storefront</p>
-            <h1 className="store-hero__title">Clean shopping flow with login, cart, and checkout history.</h1>
+            <h1 className="store-hero__title">Clean shopping flow with cart and instant checkout.</h1>
             <p className="store-hero__text">
-              This version is built to be easy to maintain and easy to deploy, without dragging the failed project
-              structure forward.
+              Browse the catalog, add items to your cart, and checkout in seconds — no account needed.
             </p>
           </div>
           <div className="store-hero__stats">
@@ -315,10 +208,6 @@ export default function Shop({ auth = null, onLogout = () => {} }) {
             <div className="store-stat">
               <span>Cart items</span>
               <strong>{totalItems}</strong>
-            </div>
-            <div className="store-stat">
-              <span>Orders</span>
-              <strong>{ordersLoading ? '...' : orders.length}</strong>
             </div>
           </div>
         </section>
@@ -463,57 +352,6 @@ export default function Shop({ auth = null, onLogout = () => {} }) {
                 </button>
               </div>
             </section>
-
-            {!isGuest ? (
-              <section className="shop-section">
-                <div className="shop-section__header">
-                  <div>
-                    <h2 className="shop-section__title">Order history</h2>
-                    <p className="shop-section__meta">Your latest purchases, newest first.</p>
-                  </div>
-                </div>
-
-                {ordersLoading ? (
-                  <div className="loading-state">Loading order history...</div>
-                ) : ordersError ? (
-                  <div className="status-message status-message--error">{ordersError}</div>
-                ) : orders.length === 0 ? (
-                  <div className="empty-state">No orders yet. Complete a checkout to build your history.</div>
-                ) : (
-                  <div className="orders-list">
-                    {orders.map((order) => (
-                      <article className="order-card" key={order.id}>
-                        <div className="order-card__header">
-                          <div>
-                            <h3 className="order-card__title">Order placed</h3>
-                            <p className="order-card__meta">
-                              {formatDate(order.createdAt)} . {order.items.length} item(s)
-                            </p>
-                          </div>
-                          <span className={`order-chip order-chip--${order.status}`}>{order.status}</span>
-                        </div>
-
-                        <ul className="order-card__items">
-                          {order.items.map((item, index) => (
-                            <li className="order-card__item" key={`${item.productId || item.name}-${index}`}>
-                              <span>
-                                {item.name} x {item.quantity}
-                              </span>
-                              <strong>{formatCurrency(item.price * item.quantity)}</strong>
-                            </li>
-                          ))}
-                        </ul>
-
-                        <div className="order-card__footer">
-                          <span>Total</span>
-                          <strong>{formatCurrency(order.total)}</strong>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </section>
-            ) : null}
           </aside>
         </div>
       </div>

@@ -74,7 +74,7 @@ async function createCheckoutOrder(req, res) {
     const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     const order = await Order.create({
-      userId: req.user.userId,
+      userId: req.user?.userId || 'guest',
       items: orderItems,
       total,
       status,
@@ -108,6 +108,6 @@ async function getMyOrders(req, res) {
 }
 
 router.get('/me', auth, getMyOrders);
-router.post('/checkout', auth, createCheckoutOrder);
+router.post('/checkout', createCheckoutOrder);
 
 export default router;
