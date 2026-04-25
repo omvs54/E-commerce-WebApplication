@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
 import Shop from './pages/Shop';
@@ -20,6 +20,8 @@ function AuthGate({ auth, role, children }) {
 
 function AppRouter() {
   const [auth, setAuth] = useState(() => loadStoredAuth());
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -32,6 +34,18 @@ function AppRouter() {
       window.localStorage.removeItem(AUTH_STORAGE_KEY);
     }
   }, [auth]);
+
+  useEffect(() => {
+    if (!auth?.token) {
+      return;
+    }
+
+    const destination = getHomePath(auth.role);
+
+    if (location.pathname === '/login' || location.pathname === '/') {
+      navigate(destination, { replace: true });
+    }
+  }, [auth?.role, auth?.token, location.pathname, navigate]);
 
   const handleAuthSuccess = (nextAuth) => {
     const normalized = normalizeStoredAuth(nextAuth, nextAuth?.role);
