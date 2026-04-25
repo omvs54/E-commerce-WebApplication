@@ -1,6 +1,6 @@
 const DEFAULT_LOCAL_API_URL = 'http://localhost:4000';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? DEFAULT_LOCAL_API_URL : '');
+export const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? DEFAULT_LOCAL_API_URL : 'https://e-commerce-webapplication-production.up.railway.app');
 
 export function buildApiUrl(path) {
   return `${API_BASE_URL}${path}`;

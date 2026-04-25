@@ -25,6 +25,8 @@ const allowedOrigins = new Set([
   'http://127.0.0.1:5173',
   'http://localhost:4173',
   'http://127.0.0.1:4173',
+  'https://e-commerce-web-application-psi.vercel.app',
+  'https://e-commerce-webapplication-production.up.railway.app',
 ]);
 
 app.use(
