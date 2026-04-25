@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { apiRequest } from '../lib/api';
 import { clearStoredCart, loadStoredCart, persistStoredCart } from '../lib/session';
+import { PRODUCTS } from '../data/products';
 
 const INR_FORMATTER = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -41,9 +42,7 @@ function Notice({ type, message }) {
 
 export default function Shop() {
   const userId = 'guest';
-  const [products, setProducts] = useState([]);
-  const [productsLoading, setProductsLoading] = useState(true);
-  const [productsError, setProductsError] = useState('');
+  const [products] = useState(() => PRODUCTS.map(normalizeProduct));
   const [cart, setCart] = useState(() => loadStoredCart(userId));
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutNotice, setCheckoutNotice] = useState({ type: '', message: '' });
@@ -53,39 +52,6 @@ export default function Shop() {
   useEffect(() => {
     persistStoredCart(userId, cart);
   }, [cart, userId]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadProducts = async () => {
-      setProductsLoading(true);
-      setProductsError('');
-
-      try {
-        const data = await apiRequest('/api/products');
-        const rawProducts = Array.isArray(data) ? data : data?.products || [];
-
-        if (!cancelled) {
-          setProducts(rawProducts.map(normalizeProduct));
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setProducts([]);
-          setProductsError(error.message || 'Unable to load products.');
-        }
-      } finally {
-        if (!cancelled) {
-          setProductsLoading(false);
-        }
-      }
-    };
-
-    void loadProducts();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const addToCart = (product) => {
     setCheckoutNotice({ type: '', message: '' });
@@ -203,7 +169,7 @@ export default function Shop() {
           <div className="store-hero__stats">
             <div className="store-stat">
               <span>Products</span>
-              <strong>{productsLoading ? '...' : products.length}</strong>
+              <strong>{products.length}</strong>
             </div>
             <div className="store-stat">
               <span>Cart items</span>
@@ -218,15 +184,11 @@ export default function Shop() {
               <div className="shop-section__header">
                 <div>
                   <h2 className="shop-section__title">Products</h2>
-                  <p className="shop-section__meta">Everything is priced in INR and available through the live API.</p>
+                <p className="shop-section__meta">Everything is priced in INR and available instantly — no API required.</p>
                 </div>
               </div>
 
-              {productsLoading ? (
-                <div className="loading-state">Loading products...</div>
-              ) : productsError ? (
-                <div className="status-message status-message--error">{productsError}</div>
-              ) : products.length === 0 ? (
+              {products.length === 0 ? (
                 <div className="empty-state">No products are available right now.</div>
               ) : (
                 <div className="shop-grid">
