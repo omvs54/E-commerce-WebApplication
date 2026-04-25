@@ -14,7 +14,6 @@ Express + MongoDB backend for the ecommerce website.
 
 ```bash
 npm install
-cp .env.example .env
 npm run dev
 ```
 
@@ -28,15 +27,12 @@ Required environment variables:
 - `ADMIN_EMAIL`
 - `ADMIN_PASSWORD`
 
-## Render
+## Deployment
 
-Create a Web Service on Render with:
+### Railway (Recommended)
 
-- Build command: `npm install`
-- Start command: `npm start`
+1. Go to [railway.app](https://railway.app) and create a new project from your GitHub repo.
+2. Set the **Root Directory** to `backend`.
+3. Set the environment variables above in the Railway dashboard.
+4. Railway auto-detects Node.js and will run `npm start`.
 
-Set the environment variables from `.env.example`, especially:
-
-- `MONGODB_URI`
-- `JWT_SECRET`
-- `FRONTEND_URL=https://your-frontend-service.onrender.com`
