@@ -31,18 +31,7 @@ const allowedOrigins = new Set([
   'https://e-commerce-webapplication-production.up.railway.app',
 ]);
 
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.has(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(new Error('Origin not allowed by CORS'));
-    },
-    credentials: true,
-  })
-);
+app.use(cors({ origin: true, credentials: true }));
 
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
