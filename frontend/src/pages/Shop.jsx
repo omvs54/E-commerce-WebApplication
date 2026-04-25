@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { apiRequest } from '../lib/api';
 import { clearStoredCart, loadStoredCart, persistStoredCart } from '../lib/session';
 import { PRODUCTS } from '../data/products';
 
@@ -104,7 +103,7 @@ export default function Shop() {
     setCheckoutNotice({ type: '', message: '' });
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!cart.length) {
       setCheckoutNotice({
         type: 'error',
@@ -116,34 +115,15 @@ export default function Shop() {
     setCheckoutLoading(true);
     setCheckoutNotice({ type: '', message: '' });
 
-    try {
-      const data = await apiRequest('/api/orders/checkout', {
-        method: 'POST',
-        body: {
-          items: cart.map((item) => ({
-            productId: item.id,
-            name: item.name,
-            image: item.image,
-            price: item.price,
-            quantity: item.quantity,
-          })),
-        },
-      });
-
+    setTimeout(() => {
       setCart([]);
       clearStoredCart(userId);
       setCheckoutNotice({
         type: 'success',
-        message: data?.message || 'Order placed successfully.',
+        message: 'Order placed successfully.',
       });
-    } catch (error) {
-      setCheckoutNotice({
-        type: 'error',
-        message: error.message || 'Unable to complete checkout.',
-      });
-    } finally {
       setCheckoutLoading(false);
-    }
+    }, 800);
   };
 
   return (
