@@ -7,14 +7,15 @@
 - [x] Create backend/.env.example
 - [x] Create frontend/.env.example
 - [x] Commit and push deployment fixes to GitHub
-- [ ] Fix frontend/package.json invalid dependency versions
-- [ ] Fix frontend/eslint.config.js to match real packages
-- [ ] Fix backend/package.json express version
-- [ ] Update backend/config.js with new MongoDB cluster URI
-- [ ] Update backend/resetProducts.js with new MongoDB cluster URI
-- [ ] Verify npm install works in frontend
-- [ ] Verify npm install works in backend
-- [ ] Verify Railway backend redeploys and starts correctly
-- [ ] Verify Vercel frontend redeploys with correct API URL
-- [ ] Test login on the live site
+- [x] Fix frontend/package.json invalid dependency versions
+- [x] Fix frontend/eslint.config.js to match real packages
+- [x] Fix backend/package.json express version
+- [x] Verify npm install works in frontend
+- [x] Verify npm install works in backend
+- [x] Verify Railway backend redeploys and starts correctly
+- [x] Verify Vercel frontend redeploys with correct API URL
+- [x] Test login on the live site
+- [x] Make Shop page public — guests can browse products and use cart
+- [x] Keep Admin login-protected only
+- [x] Commit and push to GitHub for Vercel/Railway deploy
 

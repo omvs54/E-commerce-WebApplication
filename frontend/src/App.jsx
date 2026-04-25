@@ -63,18 +63,14 @@ function AppRouter() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate replace to={auth?.token ? homePath : '/login'} />} />
+      <Route path="/" element={<Navigate replace to="/shop" />} />
       <Route
         path="/login"
         element={auth?.token ? <Navigate replace to={homePath} /> : <Login onAuthSuccess={handleAuthSuccess} />}
       />
       <Route
         path="/shop"
-        element={
-          <AuthGate auth={auth}>
-            <Shop key={auth?.user?.userId || auth?.role || 'shop'} auth={auth} onLogout={handleLogout} />
-          </AuthGate>
-        }
+        element={<Shop key={auth?.user?.userId || auth?.role || 'guest'} auth={auth} onLogout={handleLogout} />}
       />
       <Route
         path="/admin"
@@ -84,7 +80,7 @@ function AppRouter() {
           </AuthGate>
         }
       />
-      <Route path="*" element={<Navigate replace to={auth?.token ? homePath : '/login'} />} />
+      <Route path="*" element={<Navigate replace to="/shop" />} />
     </Routes>
   );
 }

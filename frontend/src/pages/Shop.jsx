@@ -58,7 +58,8 @@ function Notice({ type, message }) {
   return <div className={`status-message status-message--${type}`}>{message}</div>;
 }
 
-export default function Shop({ auth, onLogout = () => {} }) {
+export default function Shop({ auth = null, onLogout = () => {} }) {
+  const isGuest = !auth?.token;
   const userId = auth?.user?.userId || 'guest';
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
@@ -213,6 +214,14 @@ export default function Shop({ auth, onLogout = () => {} }) {
       return;
     }
 
+    if (isGuest) {
+      setCheckoutNotice({
+        type: 'info',
+        message: 'Please log in to complete your checkout.',
+      });
+      return;
+    }
+
     setCheckoutLoading(true);
     setCheckoutNotice({ type: '', message: '' });
 
@@ -262,7 +271,7 @@ export default function Shop({ auth, onLogout = () => {} }) {
               Om Satarkar Store
             </Link>
             <p className="app-bar__subtitle">
-              Welcome {auth?.user?.name || 'back'} . Browse products, manage your cart, and review your latest orders.
+              Welcome {isGuest ? 'guest' : auth?.user?.name || 'back'}. Browse products, manage your cart, and review your latest orders.
             </p>
           </div>
 
@@ -272,12 +281,20 @@ export default function Shop({ auth, onLogout = () => {} }) {
                 Admin dashboard
               </Link>
             ) : null}
-            <div className="app-chip">
-              <span>{auth?.user?.email || 'Signed in'}</span>
-            </div>
-            <button type="button" className="button button--ghost" onClick={onLogout}>
-              Logout
-            </button>
+            {isGuest ? (
+              <Link to="/login" className="button button--primary">
+                Login
+              </Link>
+            ) : (
+              <>
+                <div className="app-chip">
+                  <span>{auth?.user?.email || 'Signed in'}</span>
+                </div>
+                <button type="button" className="button button--ghost" onClick={onLogout}>
+                  Logout
+                </button>
+              </>
+            )}
           </div>
         </header>
 
@@ -447,54 +464,56 @@ export default function Shop({ auth, onLogout = () => {} }) {
               </div>
             </section>
 
-            <section className="shop-section">
-              <div className="shop-section__header">
-                <div>
-                  <h2 className="shop-section__title">Order history</h2>
-                  <p className="shop-section__meta">Your latest purchases, newest first.</p>
+            {!isGuest ? (
+              <section className="shop-section">
+                <div className="shop-section__header">
+                  <div>
+                    <h2 className="shop-section__title">Order history</h2>
+                    <p className="shop-section__meta">Your latest purchases, newest first.</p>
+                  </div>
                 </div>
-              </div>
 
-              {ordersLoading ? (
-                <div className="loading-state">Loading order history...</div>
-              ) : ordersError ? (
-                <div className="status-message status-message--error">{ordersError}</div>
-              ) : orders.length === 0 ? (
-                <div className="empty-state">No orders yet. Complete a checkout to build your history.</div>
-              ) : (
-                <div className="orders-list">
-                  {orders.map((order) => (
-                    <article className="order-card" key={order.id}>
-                      <div className="order-card__header">
-                        <div>
-                          <h3 className="order-card__title">Order placed</h3>
-                          <p className="order-card__meta">
-                            {formatDate(order.createdAt)} . {order.items.length} item(s)
-                          </p>
+                {ordersLoading ? (
+                  <div className="loading-state">Loading order history...</div>
+                ) : ordersError ? (
+                  <div className="status-message status-message--error">{ordersError}</div>
+                ) : orders.length === 0 ? (
+                  <div className="empty-state">No orders yet. Complete a checkout to build your history.</div>
+                ) : (
+                  <div className="orders-list">
+                    {orders.map((order) => (
+                      <article className="order-card" key={order.id}>
+                        <div className="order-card__header">
+                          <div>
+                            <h3 className="order-card__title">Order placed</h3>
+                            <p className="order-card__meta">
+                              {formatDate(order.createdAt)} . {order.items.length} item(s)
+                            </p>
+                          </div>
+                          <span className={`order-chip order-chip--${order.status}`}>{order.status}</span>
                         </div>
-                        <span className={`order-chip order-chip--${order.status}`}>{order.status}</span>
-                      </div>
 
-                      <ul className="order-card__items">
-                        {order.items.map((item, index) => (
-                          <li className="order-card__item" key={`${item.productId || item.name}-${index}`}>
-                            <span>
-                              {item.name} x {item.quantity}
-                            </span>
-                            <strong>{formatCurrency(item.price * item.quantity)}</strong>
-                          </li>
-                        ))}
-                      </ul>
+                        <ul className="order-card__items">
+                          {order.items.map((item, index) => (
+                            <li className="order-card__item" key={`${item.productId || item.name}-${index}`}>
+                              <span>
+                                {item.name} x {item.quantity}
+                              </span>
+                              <strong>{formatCurrency(item.price * item.quantity)}</strong>
+                            </li>
+                          ))}
+                        </ul>
 
-                      <div className="order-card__footer">
-                        <span>Total</span>
-                        <strong>{formatCurrency(order.total)}</strong>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </section>
+                        <div className="order-card__footer">
+                          <span>Total</span>
+                          <strong>{formatCurrency(order.total)}</strong>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </section>
+            ) : null}
           </aside>
         </div>
       </div>
