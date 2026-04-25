@@ -19,19 +19,7 @@ import seedProducts from './resetProducts.js';
 
 const app = express();
 
-const allowedOrigins = new Set([
-  FRONTEND_URL,
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'http://localhost:4173',
-  'http://127.0.0.1:4173',
-  'https://e-commerce-web-application-psi.vercel.app',
-  'https://e-commerce-web-application-279ze0eka-omvs54s-projects.vercel.app',
-  'https://e-commerce-web-application-git-main-omvs54s-projects.vercel.app',
-  'https://e-commerce-webapplication-production.up.railway.app',
-]);
-
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors());
 
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
