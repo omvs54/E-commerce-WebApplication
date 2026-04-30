@@ -172,7 +172,7 @@ MIT License
 
 **Om Satarkar**
 - GitHub: [@omvs54](https://github.com/omvs54)
-- Email: om@gmail.com
+- LinkedIN:[@omvs54](https://www.linkedin.com/in/om-satarkar-2579392b8/)
 
 ---
 
