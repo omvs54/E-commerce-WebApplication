@@ -158,7 +158,17 @@ repo-sync/
 
 ## Screenshots
 
-> Add your screenshots to the `docs/` folder and reference them here
+<img width="1920" height="1080" alt="Screenshot (114)" src="https://github.com/user-attachments/assets/7a06a048-f36f-4d95-80a6-d9bd48ed2e44" />
+<img width="1920" height="1080" alt="Screenshot (115)" src="https://github.com/user-attachments/assets/5e2039d8-17d8-4bf8-b53f-c1fe20374d5c" />
+<img width="1920" height="1080" alt="Screenshot (116)" src="https://github.com/user-attachments/assets/5de271aa-2929-41fe-afc0-7cb2b63bcc0f" />
+<img width="1920" height="1080" alt="Screenshot (117)" src="https://github.com/user-attachments/assets/34fc599c-1daa-4114-8397-4a07fec92a50" />
+<img width="1920" height="1080" alt="Screenshot (118)" src="https://github.com/user-attachments/assets/f056c791-9c04-48f2-bb67-0b40c3e0c3ee" />
+<img width="1920" height="1080" alt="Screenshot (119)" src="https://github.com/user-attachments/assets/6125df7d-9eb4-48b8-b6a0-979138732d65" />
+<img width="1920" height="1080" alt="Screenshot (120)" src="https://github.com/user-attachments/assets/a0ab6340-4029-44ee-8339-52ada32e8a78" />
+<img width="1920" height="1080" alt="Screenshot (121)" src="https://github.com/user-attachments/assets/5b558d41-0125-4c51-8c25-2c876e17c04d" />
+
+
+
 
 ---
 
