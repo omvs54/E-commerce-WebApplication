@@ -1,88 +1,179 @@
-# E-commerce WebApplication
+# Om Satarkar Store 🛒
 
-This repository uses a clean monorepo structure:
+A modern full-stack e-commerce web application built with the MERN stack (MongoDB, Express, React, Node.js). Features a clean storefront with product browsing, shopping cart, and instant checkout — no account required.
 
-- `frontend/` contains the React + Vite storefront
-- `backend/` contains the Express + MongoDB API
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | React 18 + Vite + React Router |
+| Styling | Custom CSS (design system) |
+| Backend | Express.js + Node.js |
+| Database | MongoDB (MongoDB Atlas) |
+| Auth | JWT + bcrypt password hashing |
+
+---
 
 ## Features
 
-- Customer login and registration
-- Admin login with seeded admin credentials from environment variables
-- Product catalog and cart flow
-- Checkout with order history
-- Admin dashboard for products and metrics
+### Customer Features
+- **Product Catalog** — Browse 32 products across categories (Fashion, Footwear, Electronics, Home, Sports, Accessories)
+- **Shopping Cart** — Add/remove items, adjust quantities, persistent cart storage (localStorage)
+- **Instant Checkout** — No login required, checkout in seconds
+- **User Accounts** — Registration and login with local database backup
 
-## Local Development
+### Admin Features
+- **Admin Dashboard** — Manage products and view metrics
+- **Protected Routes** — Admin-only access
 
-Frontend:
+---
+
+## Quick Start
+
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- MongoDB Atlas account (free tier)
+
+### Local Development
+
+#### 1. Clone and Install
 
 ```bash
+# Clone the repository
+git clone https://github.com/omvs54/e-commerce-web-application.git
+cd e-commerce-web-application
+
+# Install frontend dependencies
 cd frontend
 npm install
-npm run dev
+
+# Install backend dependencies
+cd ../backend
+npm install
 ```
 
-Backend:
+#### 2. Configure Environment Variables
+
+Create `backend/.env`:
+
+```env
+MONGODB_URI=mongodb+srv://your_db_connection_string
+JWT_SECRET=your_secure_random_string
+FRONTEND_URL=http://localhost:5173
+ADMIN_NAME=Om Satarkar
+ADMIN_LOGIN=om
+ADMIN_EMAIL=om@gmail.com
+ADMIN_PASSWORD=your_admin_password
+```
+
+Create `frontend/.env`:
+
+```env
+VITE_API_URL=http://localhost:4000
+```
+
+#### 3. Run Locally
 
 ```bash
+# Terminal 1 - Backend
 cd backend
-npm install
+npm run dev
+
+# Terminal 2 - Frontend
+cd frontend
 npm run dev
 ```
+
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:4000
+
+---
 
 ## Deployment
 
-### Recommended: Vercel (Frontend) + Railway (Backend)
+### Recommended Stack
 
-This is the best free hosting stack for a MERN app. Vercel hosts the React frontend with no sleep/cold-start, and Railway hosts the Node.js backend with a $5/month free credit (enough for 24/7 uptime).
+| Service | Purpose | Free Tier |
+|---------|---------|----------|
+| Vercel | Frontend hosting | ✅ Yes |
+| Railway | Backend hosting | ~$5 credit/month |
+| MongoDB Atlas | Database | ✅ 512MB free |
 
-#### 1. Backend on Railway
+### Deploy Backend to Railway
 
-1. Go to [railway.app](https://railway.app) and sign in with GitHub.
-2. Click **New Project** → **Deploy from GitHub repo**.
-3. Select this repository, then set the **Root Directory** to `backend`.
-4. Add environment variables in the Railway dashboard:
-   - `MONGODB_URI` = your MongoDB Atlas connection string
-   - `JWT_SECRET` = a long random string
-   - `FRONTEND_URL` = your Vercel frontend URL (set this after Step 2)
-   - `ADMIN_NAME` = Om Satarkar
-   - `ADMIN_LOGIN` = om
-   - `ADMIN_EMAIL` = om@gmail.com
-   - `ADMIN_PASSWORD` = password@123
-5. Railway will give you a public URL like `https://your-project.up.railway.app`.
+1. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub
+2. Set **Root Directory** to `backend`
+3. Add environment variables in dashboard
+4. Deploy and copy Railway URL
 
-#### 2. Frontend on Vercel
+### Deploy Frontend to Vercel
 
-1. Go to [vercel.com](https://vercel.com) and sign in with GitHub.
-2. Click **Add New Project** → import this repository.
-3. Set the **Root Directory** to `frontend`.
-4. Set the **Framework Preset** to `Vite`.
-5. Add environment variable:
-   - `VITE_API_URL` = your Railway backend URL from Step 1
-6. Click **Deploy**.
-7. Copy your Vercel URL (e.g., `https://your-project.vercel.app`) and paste it into the Railway `FRONTEND_URL` env var.
+1. Go to [vercel.com](https://vercel.com) → Add Project → Import repo
+2. Set **Root Directory** to `frontend`
+3. Set **Framework Preset** to `Vite`
+4. Add `VITE_API_URL` = your Railway backend URL
+5. Deploy
 
-> A `vercel.json` is already included in `frontend/` to handle SPA routing.
+---
 
-### Alternative: Netlify (Frontend) + Railway (Backend)
+## Project Structure
 
-- The `frontend/` folder includes a `netlify.toml` with build settings and SPA redirect rules.
-- Deploy the frontend to [netlify.com](https://netlify.com) using the same steps as Vercel.
-- Backend setup on Railway is identical.
+```
+repo-sync/
+├── frontend/              # React + Vite frontend
+│   ├── src/
+│   │   ├── pages/        # Shop, Login, Register pages
+│   │   ├── lib/         # API, session, userDb utilities
+│   │   ├── data/        # Static products data
+│   │   └── App.jsx      # Main app with routing
+│   ├── vite.config.js
+│   └── package.json
+│
+├── backend/              # Express + MongoDB backend
+│   ├── routes/          # auth, products, orders, admin
+│   ├── models/          # User, Product, Order schemas
+│   ├── middleware/      # Auth verification
+│   ├── config.js        # Environment config
+│   └── index.js         # Express server entry
+│
+└── README.md
+```
 
-### Database
+---
 
-You need a MongoDB database. [MongoDB Atlas](https://www.mongodb.com/atlas) offers a free forever tier (512MB).
+## API Endpoints
 
-1. Create a cluster, database user, and allow access from anywhere (`0.0.0.0/0`).
-2. Copy the connection string and add your database name before the query params:
-   ```
-   mongodb+srv://user:password@cluster.mongodb.net/om_satarkar_store?retryWrites=true&w=majority
-   ```
-3. Use this full string as `MONGODB_URI` in your backend environment variables.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | User registration |
+| POST | `/api/auth/login` | User/admin login |
+| GET | `/api/products` | List all products |
+| GET | `/api/products/:id` | Get single product |
+| POST | `/api/orders` | Create new order |
+| GET | `/api/orders/:userId` | Get user orders |
+| GET | `/api/admin/metrics` | Admin dashboard data |
 
-## Recommended GitHub Owner
+---
 
-- `omvs54`
+## Screenshots
 
+> Add your screenshots to the `docs/` folder and reference them here
+
+---
+
+## License
+
+MIT License
+
+---
+
+## Contact
+
+**Om Satarkar**
+- GitHub: [@omvs54](https://github.com/omvs54)
+- Email: om@gmail.com
+
+---
+
+*Built with React + Express — Deploy to Vercel + Railway for free hosting*

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { clearStoredCart, loadStoredCart, persistStoredCart } from '../lib/session';
 import { PRODUCTS } from '../data/products';
 
@@ -126,15 +127,23 @@ export default function Shop() {
     }, 800);
   };
 
-  return (
+return (
     <main className="app-shell shop-page">
       <div className="app-shell__container">
         <header className="app-bar">
           <div className="app-bar__brand">
-            <span className="app-bar__title">Om Satarkar Store</span>
+            <Link to="/" className="app-bar__title">Om Satarkar Store</Link>
             <p className="app-bar__subtitle">
               Browse products, manage your cart, and checkout instantly — no login required.
             </p>
+          </div>
+          <div className="app-bar__actions">
+            <Link to="/login" className="button button--primary">
+              Login
+            </Link>
+            <Link to="/register" className="button button--secondary">
+              Sign Up
+            </Link>
           </div>
         </header>
 
